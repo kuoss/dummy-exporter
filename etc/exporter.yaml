@@ -1,0 +1,80 @@
+server:
+  address: "0.0.0.0"
+  port: 9100
+  updateInterval: 3s
+
+collectors:
+  enabled: true
+  goCollector: true
+  processCollector: true
+
+exporters:
+  enabled: true
+  dcgmExporter:
+    enabled: true
+  kubeStateMetrics:
+    enabled: true
+  nodeExporter:
+    enabled: true
+
+customMetrics:
+- name: custom_always_up
+  type: gauge
+  help: Always up metric
+  generator:
+    type: fixed
+    value: 1
+
+- name: custom_the_answer
+  type: gauge
+  help: The answer to life
+  generator:
+    type: fixed
+    value: 42
+
+- name: custom_cycle_up
+  type: gauge
+  help: Cycles an up/down state (0 = down, 1 = up)
+  generator:
+    type: round_robin
+    values: [0, 1]
+
+- name: custom_cycle_code
+  type: gauge
+  help: Cycles through HTTP response codes
+  generator:
+    type: round_robin
+    values: [200, 301, 400, 404, 500]
+
+- name: custom_coin
+  type: gauge
+  help: Random coin flip (0 = tails, 1 = heads)
+  generator:
+    type: rand_int
+    values: [0, 1]
+
+- name: custom_dice
+  type: gauge
+  help: Simulates a dice roll (1-6)
+  generator:
+    type: rand_int
+    values: [1, 6]
+
+- name: custom_temperature
+  type: gauge
+  help: Simulated temperature (°C)
+  generator:
+    type: rand_float
+    values: [-5, 30]
+
+- name: custom_http_requests_total
+  type: counter
+  help: Total HTTP requests
+
+- name: custom_request_duration_seconds
+  type: histogram
+  help: Request durations
+
+- name: custom_latency_summary
+  type: summary
+  help: Latency quantiles
