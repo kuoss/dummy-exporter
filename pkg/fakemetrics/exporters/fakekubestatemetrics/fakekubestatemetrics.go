@@ -66,24 +66,23 @@ type Options struct {
 	ContainerPerPod int
 }
 
-func GetMetrics(namespaceCount, podPerNamespace, containerPerPod int) ([]fakemetrics.Metric, error) {
+func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 	var metrics []fakemetrics.Metric
 
-	// Set default values if necessary
-	if namespaceCount <= 0 {
-		namespaceCount = 1
+	if opts.NamespaceCount <= 0 {
+		opts.NamespaceCount = 2
 	}
-	if podPerNamespace <= 0 {
-		podPerNamespace = 1
+	if opts.PodPerNamespace <= 0 {
+		opts.PodPerNamespace = 2
 	}
-	if containerPerPod <= 0 {
-		containerPerPod = 1
+	if opts.ContainerPerPod <= 0 {
+		opts.ContainerPerPod = 2
 	}
 
-	for ns := 0; ns < namespaceCount; ns++ {
+	for ns := 0; ns < opts.NamespaceCount; ns++ {
 		namespaceName := fmt.Sprintf("namespace%d", ns+1)
 
-		for pod := 0; pod < podPerNamespace; pod++ {
+		for pod := 0; pod < opts.PodPerNamespace; pod++ {
 			podName := fmt.Sprintf("pod%d", pod+1)
 
 			for _, option := range metricOptions {
@@ -109,7 +108,8 @@ func GetMetrics(namespaceCount, podPerNamespace, containerPerPod int) ([]fakemet
 
 		// Create node condition metrics
 		for _, option := range metricOptions {
-			if option.Name == "kube_node_status_condition" {
+			switch option.Name {
+			case "kube_node_status_condition":
 				nodeOption := option
 				if nodeOption.Labels == nil {
 					nodeOption.Labels = make(map[string]string)
@@ -123,7 +123,7 @@ func GetMetrics(namespaceCount, podPerNamespace, containerPerPod int) ([]fakemet
 				}
 
 				metrics = append(metrics, *metric)
-			} else if option.Name == "kube_deployment_status_replicas" {
+			case "kube_deployment_status_replicas":
 				// Deployment metrics
 				deploymentOption := option
 				if deploymentOption.Labels == nil {

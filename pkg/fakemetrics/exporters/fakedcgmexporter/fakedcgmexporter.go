@@ -139,21 +139,21 @@ type Options struct {
 	GPUPerNode int
 }
 
-func GetMetrics(nodeCount, gpuPerNode int) ([]fakemetrics.Metric, error) {
+func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 	var metrics []fakemetrics.Metric
 
 	// Set default values
-	if nodeCount <= 0 {
-		nodeCount = 1
+	if opts.NodeCount <= 0 {
+		opts.NodeCount = 1
 	}
-	if gpuPerNode <= 0 {
-		gpuPerNode = 1
+	if opts.GPUPerNode <= 0 {
+		opts.GPUPerNode = 1
 	}
 
-	for i := 0; i < nodeCount; i++ {
+	for i := 0; i < opts.NodeCount; i++ {
 		nodeName := fmt.Sprintf("node%d", i+1)
 
-		for g := 0; g < gpuPerNode; g++ {
+		for g := 0; g < opts.GPUPerNode; g++ {
 			gpuName := fmt.Sprintf("gpu%d", g+1)
 
 			for _, option := range metricOptions {

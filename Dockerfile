@@ -1,16 +1,18 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23 AS builder
 
-WORKDIR /app
+ARG VERSION
+
+WORKDIR /workspace
 
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN go build -o dummy-exporter ./cmd/dummy-exporter
+RUN CGO_ENABLED=0 go build -ldflags="-X 'main.Version=$VERSION'" -a -o dummy-exporter cmd/main.go
 
-FROM alpine:3.18
-WORKDIR /app
-COPY --from=builder /app/dummy-exporter /app/dummy-exporter
-COPY etc/exporter.yaml /app/etc/exporter.yaml
-EXPOSE 9100
+FROM gcr.io/distroless/static:nonroot
+WORKDIR /
+COPY --from=builder /workspace/dummy-exporter    .
+COPY --from=builder /workspace/etc/exporter.yaml ./etc/
+USER 65532:65532
 
-CMD ["/app/dummy-exporter"]
+ENTRYPOINT ["/dummy-exporter"]
