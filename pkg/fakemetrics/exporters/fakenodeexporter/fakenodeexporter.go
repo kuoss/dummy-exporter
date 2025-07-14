@@ -100,7 +100,8 @@ func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 		nodeName := fmt.Sprintf("node%d", i+1)
 
 		for _, option := range metricOptions {
-			if option.Name == "node_cpu_seconds_total" {
+			switch option.Name {
+			case "node_cpu_seconds_total":
 				for cpu := 0; cpu < opts.CPUPerNode; cpu++ {
 					for _, mode := range cpuModes {
 						cpuOption := option
@@ -120,7 +121,7 @@ func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 						metrics = append(metrics, *metric)
 					}
 				}
-			} else if option.Name == "node_network_receive_bytes_total" || option.Name == "node_network_transmit_bytes_total" {
+			case "node_network_receive_bytes_total", "node_network_transmit_bytes_total":
 				// 네트워크 메트릭: EthPerNode만큼 생성
 				for eth := 0; eth < opts.EthPerNode; eth++ {
 					nodeOption := option
@@ -138,7 +139,7 @@ func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 
 					metrics = append(metrics, *metric)
 				}
-			} else if option.Name == "node_disk_read_bytes_total" || option.Name == "node_disk_written_bytes_total" {
+			case "node_disk_read_bytes_total", "node_disk_written_bytes_total":
 				for disk := 0; disk < opts.DiskPerNode; disk++ {
 					nodeOption := option
 					if nodeOption.Labels == nil {
@@ -155,7 +156,7 @@ func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 
 					metrics = append(metrics, *metric)
 				}
-			} else if option.Name == "node_filesystem_size_bytes" || option.Name == "node_filesystem_free_bytes" {
+			case "node_filesystem_size_bytes", "node_filesystem_free_bytes":
 				for disk := 0; disk < opts.DiskPerNode; disk++ {
 					nodeOption := option
 					if nodeOption.Labels == nil {
@@ -174,7 +175,7 @@ func GetMetrics(opts Options) ([]fakemetrics.Metric, error) {
 
 					metrics = append(metrics, *metric)
 				}
-			} else {
+			default:
 				nodeOption := option
 				if nodeOption.Labels == nil {
 					nodeOption.Labels = make(map[string]string)

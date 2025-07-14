@@ -89,13 +89,13 @@ func Start(version string) error {
 	// Add health check endpoint
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, "OK")
+		_, _ = fmt.Fprintf(w, "OK")
 	})
 
 	// Add status endpoint
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, `<html>
+		_, _ = fmt.Fprintf(w, `<html>
 <head><title>Dummy Exporter</title></head>
 <body>
 <h1>Dummy Exporter (%s)</h1>
@@ -134,12 +134,9 @@ func Start(version string) error {
 
 		log.Printf("📊 Starting metrics update loop with %d metrics", len(metrics))
 
-		for {
-			select {
-			case <-ticker.C:
-				for _, m := range metrics {
-					m.Update()
-				}
+		for range ticker.C {
+			for _, m := range metrics {
+				m.Update()
 			}
 		}
 	}()
@@ -183,10 +180,10 @@ func getMetrics(cfg *config.Config) ([]fakemetrics.Metric, error) {
 	if cfg.Exporters.Enabled {
 		if cfg.Exporters.DcgmExporter.Enabled {
 			log.Printf("🔧 Loading DCGM exporter metrics...")
-			ms, err := fakedcgmexporter.GetMetrics(
-				cfg.Exporters.DcgmExporter.NodeCount,
-				cfg.Exporters.DcgmExporter.GPUPerNode,
-			)
+			ms, err := fakedcgmexporter.GetMetrics(fakedcgmexporter.Options{
+				NodeCount:  cfg.Exporters.DcgmExporter.NodeCount,
+				GPUPerNode: cfg.Exporters.DcgmExporter.GPUPerNode,
+			})
 			if err != nil {
 				return nil, fmt.Errorf("fakedcgmexporter.GetMetrics err: %w", err)
 			}
@@ -196,11 +193,11 @@ func getMetrics(cfg *config.Config) ([]fakemetrics.Metric, error) {
 
 		if cfg.Exporters.KubeStateMetrics.Enabled {
 			log.Printf("🔧 Loading KSM exporter metrics...")
-			ms, err := fakekubestatemetrics.GetMetrics(
-				cfg.Exporters.KubeStateMetrics.NamespaceCount,
-				cfg.Exporters.KubeStateMetrics.PodPerNamespace,
-				cfg.Exporters.KubeStateMetrics.ContainerPerPod,
-			)
+			ms, err := fakekubestatemetrics.GetMetrics(fakekubestatemetrics.Options{
+				NamespaceCount:  cfg.Exporters.KubeStateMetrics.NamespaceCount,
+				PodPerNamespace: cfg.Exporters.KubeStateMetrics.PodPerNamespace,
+				ContainerPerPod: cfg.Exporters.KubeStateMetrics.ContainerPerPod,
+			})
 			if err != nil {
 				return nil, fmt.Errorf("fakekubestatemetrics.GetMetrics err: %w", err)
 			}
