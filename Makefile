@@ -1,3 +1,4 @@
+VERSION := dev
 GOLANGCI_LINT_VERSION := v2.1.6
 
 .PHONY: checks
@@ -20,3 +21,21 @@ test:
 cover:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
+
+.PHONY: docker
+docker: docker-build docker-run
+
+.PHONY: docker-build
+docker-build:
+	docker build -t dummy-exporter:$(VERSION) --build-arg VERSION=$(VERSION) .
+
+.PHONY: docker-run
+docker-run:
+	docker rm -f dummy-exporter
+	docker run -d -p 9100:9100 --name dummy-exporter dummy-exporter:$(VERSION)
+	sleep 1
+	curl http://localhost:9100/metrics
+
+.PHONY: docker-rm
+docker-rm:
+	docker rm -f dummy-exporter || true

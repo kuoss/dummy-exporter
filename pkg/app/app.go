@@ -98,7 +98,7 @@ func Start(version string) error {
 		fmt.Fprintf(w, `<html>
 <head><title>Dummy Exporter</title></head>
 <body>
-<h1>Dummy Exporter</h1>
+<h1>Dummy Exporter (%s)</h1>
 <p><a href="/metrics">Metrics</a></p>
 <p><a href="/health">Health</a></p>
 <h2>Configuration</h2>
@@ -113,6 +113,7 @@ func Start(version string) error {
 </body>
 </html>
 `,
+			version,
 			cfg.Exporters.NodeExporter,
 			cfg.Exporters.DcgmExporter,
 			cfg.Exporters.KubeStateMetrics,
